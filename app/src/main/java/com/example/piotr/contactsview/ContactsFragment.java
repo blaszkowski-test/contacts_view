@@ -205,7 +205,7 @@ public class ContactsFragment extends ListFragment implements
         } catch (ClassCastException e)
         {
             throw new ClassCastException(context.toString()
-                    + " must implement OnHeadlineSelectedListener");
+                    + " must implement OnContactClickListener");
         }
     }
 
