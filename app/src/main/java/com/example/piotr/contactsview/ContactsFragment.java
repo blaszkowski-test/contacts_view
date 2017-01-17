@@ -52,8 +52,7 @@ public class ContactsFragment extends ListFragment implements
 
     public static ContactsFragment newInstance()
     {
-        ContactsFragment fragment = new ContactsFragment();
-        return fragment;
+        return new ContactsFragment();
     }
 
     public void updateSearchText(String searchText)
