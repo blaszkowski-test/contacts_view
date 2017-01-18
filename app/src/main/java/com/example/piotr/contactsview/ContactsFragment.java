@@ -4,9 +4,13 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.os.Parcelable;
 import android.provider.ContactsContract;
 import android.support.v4.app.ListFragment;
@@ -44,6 +48,8 @@ public class ContactsFragment extends ListFragment implements
     private OnContactClickListener mCallback;
     private String searchSentence;
     private ContactsCursorAdapter mCursorAdapter;
+    private Handler mHandler;
+    private ContactObserver contactObserver;
 
     public ContactsFragment()
     {
@@ -140,7 +146,7 @@ public class ContactsFragment extends ListFragment implements
             PendingIntent pendingIntent = PendingIntent.getBroadcast(getActivity(), PENDING_BROADCAST, intent, FLAG_UPDATE_CURRENT);
 
             AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(ALARM_SERVICE);
-            alarmManager.set(AlarmManager.RTC, System.currentTimeMillis() + (10 * 1000), pendingIntent);
+            alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + (10 * 1000), pendingIntent);
 
             Toast.makeText(getActivity(),
                     "ADDED",
@@ -180,7 +186,6 @@ public class ContactsFragment extends ListFragment implements
         getListView().setOnItemClickListener(this);
         getListView().setOnItemLongClickListener(this);
 
-
         if (savedInstanceState != null)
         {
             stateOfList = savedInstanceState.getParcelable(LIST_STATE);
@@ -191,6 +196,43 @@ public class ContactsFragment extends ListFragment implements
         {
             getLoaderManager().initLoader(LIST_LOADER, null, this);
         }
+
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+
+        mHandler = new Handler(Looper.getMainLooper())
+        {
+            @Override
+            public void handleMessage(Message inputMessage)
+            {
+                getLoaderManager().restartLoader(LIST_LOADER, null, ContactsFragment.this);
+            }
+        };
+
+        contactObserver = new ContactObserver(mHandler);
+    }
+
+    @Override
+    public void onResume()
+    {
+        getActivity().getContentResolver().registerContentObserver(
+                ContactsContract.Contacts.CONTENT_URI,
+                true,
+                contactObserver);
+
+        super.onResume();
+    }
+
+    @Override
+    public void onPause()
+    {
+        getActivity().getContentResolver().unregisterContentObserver(contactObserver);
+
+        super.onPause();
     }
 
     @Override
@@ -212,6 +254,35 @@ public class ContactsFragment extends ListFragment implements
     public void onDetach()
     {
         super.onDetach();
+    }
+
+    private class ContactObserver extends ContentObserver
+    {
+        Handler handler;
+
+        public ContactObserver(Handler h)
+        {
+            super(h);
+            handler = h;
+        }
+
+        @Override
+        public boolean deliverSelfNotifications()
+        {
+            return super.deliverSelfNotifications();
+        }
+
+        @Override
+        public void onChange(boolean selfChange)
+        {
+            this.onChange(selfChange, null);
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri)
+        {
+            handler.sendEmptyMessage(0);
+        }
     }
 
     public interface OnContactClickListener

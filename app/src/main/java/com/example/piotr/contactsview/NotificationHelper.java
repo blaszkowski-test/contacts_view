@@ -9,6 +9,7 @@ import android.support.v4.app.NotificationManagerCompat;
 import java.util.Calendar;
 
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
+import static android.support.v4.app.NotificationCompat.*;
 
 public class NotificationHelper
 {
@@ -46,6 +47,7 @@ public class NotificationHelper
                 .setSmallIcon(android.R.drawable.stat_sys_download)
                 .setWhen(calendar.getTimeInMillis())
                 .setAutoCancel(true)
+                .setDefaults(DEFAULT_SOUND | DEFAULT_VIBRATE | DEFAULT_LIGHTS)
                 .setContentIntent(mContentIntent);
 
         //make this notification appear in the 'Ongoing events' section
