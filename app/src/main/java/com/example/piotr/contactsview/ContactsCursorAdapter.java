@@ -8,12 +8,15 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
+import android.support.v4.util.LruCache;
 import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.util.Set;
 
 
 /**
@@ -24,12 +27,36 @@ public class ContactsCursorAdapter extends CursorAdapter
 {
     private LayoutInflater mInflater;
     private Context mContext;
+    private LruCache<String, Bitmap> photoCache;
+    private Set<String> photoNotAvailable;
 
     public ContactsCursorAdapter(Context context)
     {
         super(context, null, 0);
         mContext = context;
         mInflater = LayoutInflater.from(context);
+    }
+
+    public ContactsCursorAdapter(Context context, LruCache<String, Bitmap> cache, Set<String> photoNot)
+    {
+        super(context, null, 0);
+        mContext = context;
+        mInflater = LayoutInflater.from(context);
+        photoCache = cache;
+        photoNotAvailable = photoNot;
+    }
+
+    public void addBitmapToMemoryCache(String key, Bitmap bitmap)
+    {
+        if (getBitmapFromMemCache(key) == null)
+        {
+            photoCache.put(key, bitmap);
+        }
+    }
+
+    public Bitmap getBitmapFromMemCache(String key)
+    {
+        return photoCache.get(key);
     }
 
     @Override
@@ -58,18 +85,34 @@ public class ContactsCursorAdapter extends CursorAdapter
 
     public void openPhoto(ImageView iv, long contactId)
     {
-        Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactId);
-        Uri photoUri = Uri.withAppendedPath(contactUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
-        new LoadThumbnail(iv).execute(photoUri);
+        if(photoNotAvailable.contains(String.valueOf(contactId)))
+        {
+            iv.setImageResource(R.drawable.ic_profile);
+            return;
+        }
+
+        final Bitmap bitmap = getBitmapFromMemCache(String.valueOf(contactId));
+        if (bitmap != null)
+        {
+            iv.setImageBitmap(bitmap);
+        }
+        else
+        {
+            Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactId);
+            Uri photoUri = Uri.withAppendedPath(contactUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
+            new LoadThumbnail(iv, contactId).execute(photoUri);
+        }
     }
 
     private class LoadThumbnail extends AsyncTask<Uri, Void, Bitmap>
     {
         private ImageView imageView;
+        private long contactId;
 
-        public LoadThumbnail(ImageView iv)
+        public LoadThumbnail(ImageView iv, long contactId)
         {
             imageView = iv;
+            this.contactId = contactId;
         }
 
         @Override
@@ -105,10 +148,12 @@ public class ContactsCursorAdapter extends CursorAdapter
         {
             if (result != null)
             {
+                addBitmapToMemoryCache(String.valueOf(contactId), result);
                 imageView.setImageBitmap(result);
             }
             else
             {
+                photoNotAvailable.add(String.valueOf(contactId));
                 imageView.setImageResource(R.drawable.ic_profile);
             }
         }

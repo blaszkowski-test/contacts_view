@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,11 +18,15 @@ import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Toast;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static android.content.Context.ALARM_SERVICE;
@@ -50,6 +55,8 @@ public class ContactsFragment extends ListFragment implements
     private ContactsCursorAdapter mCursorAdapter;
     private Handler mHandler;
     private ContactObserver contactObserver;
+    private LruCache<String, Bitmap> photoCache;
+    private Set<String> photoNotAvailable;
 
     public ContactsFragment()
     {
@@ -121,7 +128,8 @@ public class ContactsFragment extends ListFragment implements
 
             mCallback.userSelected(cursor.getString(cursor.getColumnIndexOrThrow("LOOKUP")),
                     cursor.getLong(cursor.getColumnIndexOrThrow("_ID")),
-                    cursor.getString(cursor.getColumnIndexOrThrow("DISPLAY_NAME")));
+                    cursor.getString(cursor.getColumnIndexOrThrow("DISPLAY_NAME")),
+                    view);
         } catch (Exception e)
         {
             Toast.makeText(getActivity(),
@@ -181,7 +189,7 @@ public class ContactsFragment extends ListFragment implements
     {
         super.onActivityCreated(savedInstanceState);
 
-        mCursorAdapter = new ContactsCursorAdapter(getActivity());
+        mCursorAdapter = new ContactsCursorAdapter(getActivity(), photoCache, photoNotAvailable);
         setListAdapter(mCursorAdapter);
         getListView().setOnItemClickListener(this);
         getListView().setOnItemLongClickListener(this);
@@ -214,6 +222,18 @@ public class ContactsFragment extends ListFragment implements
         };
 
         contactObserver = new ContactObserver(mHandler);
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        final int cacheSize = maxMemory / 8;
+        photoCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap bitmap) {
+                // The cache size will be measured in kilobytes rather than
+                // number of items.
+                return bitmap.getByteCount() / 1024;
+            }
+        };
+
+        photoNotAvailable = new HashSet<>();
     }
 
     @Override
@@ -287,6 +307,6 @@ public class ContactsFragment extends ListFragment implements
 
     public interface OnContactClickListener
     {
-        void userSelected(String lookUpKey, long id, String displayName);
+        void userSelected(String lookUpKey, long id, String displayName,View view);
     }
 }

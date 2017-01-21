@@ -1,6 +1,7 @@
 package com.example.piotr.contactsview;
 
 import android.Manifest;
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
@@ -9,6 +10,7 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements
@@ -119,13 +121,17 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void userSelected(String lookUpKey, long id, String displayName)
+    public void userSelected(String lookUpKey, long id, String displayName, View view)
     {
         Intent intent = new Intent(this, DetailsActivity.class);
         intent.putExtra(User_Look, lookUpKey);
         intent.putExtra(User_Id, id);
         intent.putExtra(User_Name, displayName);
-        startActivity(intent);
+
+        ActivityOptions options = ActivityOptions.makeScaleUpAnimation(view, 0,
+                0, view.getWidth(), view.getHeight());
+
+        startActivity(intent, options.toBundle());
     }
 
     @Override
