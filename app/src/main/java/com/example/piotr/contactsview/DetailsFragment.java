@@ -207,13 +207,12 @@ public class DetailsFragment extends Fragment implements LoaderManager.LoaderCal
                 float dest = 360;
                 if (imageView.getRotation() == 360)
                 {
-                    System.out.println(imageView.getAlpha());
                     dest = 0;
                 }
-                ObjectAnimator animation1 = ObjectAnimator.ofFloat(imageView,
+                ObjectAnimator animation = ObjectAnimator.ofFloat(imageView,
                         "rotation", dest);
-                animation1.setDuration(2000);
-                animation1.start();
+                animation.setDuration(500);
+                animation.start();
 
             }
             else
