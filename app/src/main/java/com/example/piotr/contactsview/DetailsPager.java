@@ -38,6 +38,8 @@ public class DetailsPager extends FragmentStatePagerAdapter
                 return new TabFragment();
             case 2:
                 return CameraFragment.newInstance();
+            case 3:
+                return MapsActivity.newInstance();
             default:
                 return null;
         }

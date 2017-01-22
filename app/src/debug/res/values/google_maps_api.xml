@@ -1,0 +1,21 @@
+<resources>
+    <!--
+    TODO: Before you run your application, you need a Google Maps API key.
+
+    To get one, follow this link, follow the directions and press "Create" at the end:
+
+    https://console.developers.google.com/flows/enableapi?apiid=maps_android_backend&keyType=CLIENT_SIDE_ANDROID&r=AA:7A:49:44:8A:68:6B:20:78:1F:EA:D4:91:AE:64:4F:01:79:D6:F3%3Bcom.example.piotr.contactsview
+
+    You can also add your credentials to an existing key, using this line:
+    AA:7A:49:44:8A:68:6B:20:78:1F:EA:D4:91:AE:64:4F:01:79:D6:F3;com.example.piotr.contactsview
+
+    Alternatively, follow the directions here:
+    https://developers.google.com/maps/documentation/android/start#get-key
+
+    Once you have your key (it starts with "AIza"), replace the "google_maps_key"
+    string in this file.
+    -->
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">
+
+    </string>
+</resources>

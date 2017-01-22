@@ -85,8 +85,9 @@ public class DetailsActivity extends AppCompatActivity implements PermissionHelp
 
             TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
             tabLayout.addTab(tabLayout.newTab().setText("Photo"));
-            tabLayout.addTab(tabLayout.newTab().setText("No"));
+            tabLayout.addTab(tabLayout.newTab().setText("Tab"));
             tabLayout.addTab(tabLayout.newTab().setText("Camera"));
+            tabLayout.addTab(tabLayout.newTab().setText("Map"));
             tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
             final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
