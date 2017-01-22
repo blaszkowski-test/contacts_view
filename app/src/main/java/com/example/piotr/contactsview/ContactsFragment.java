@@ -222,18 +222,30 @@ public class ContactsFragment extends ListFragment implements
         };
 
         contactObserver = new ContactObserver(mHandler);
-        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
-        final int cacheSize = maxMemory / 8;
-        photoCache = new LruCache<String, Bitmap>(cacheSize) {
-            @Override
-            protected int sizeOf(String key, Bitmap bitmap) {
-                // The cache size will be measured in kilobytes rather than
-                // number of items.
-                return bitmap.getByteCount() / 1024;
-            }
-        };
 
-        photoNotAvailable = new HashSet<>();
+        RetainFragment retainFragment =
+                RetainFragment.findOrCreateRetainFragment(getFragmentManager());
+
+        photoCache = retainFragment.mRetainedCache;
+        photoNotAvailable = retainFragment.photoNotAvailable;
+
+        if (photoCache == null)
+        {
+            final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+            final int cacheSize = maxMemory / 8;
+            photoCache = new LruCache<String, Bitmap>(cacheSize)
+            {
+                @Override
+                protected int sizeOf(String key, Bitmap bitmap)
+                {
+                    // The cache size will be measured in kilobytes rather than
+                    // number of items.
+                    return bitmap.getByteCount() / 1024;
+                }
+            };
+            retainFragment.mRetainedCache = photoCache;
+            photoNotAvailable = new HashSet<>();
+        }
     }
 
     @Override
@@ -307,6 +319,6 @@ public class ContactsFragment extends ListFragment implements
 
     public interface OnContactClickListener
     {
-        void userSelected(String lookUpKey, long id, String displayName,View view);
+        void userSelected(String lookUpKey, long id, String displayName, View view);
     }
 }
