@@ -29,7 +29,6 @@ public class DetailsPager extends FragmentStatePagerAdapter
     @Override
     public Fragment getItem(int position)
     {
-        Fragment fragment = null;
         switch (position)
         {
             case 0:
@@ -39,7 +38,7 @@ public class DetailsPager extends FragmentStatePagerAdapter
             case 2:
                 return CameraFragment.newInstance();
             case 3:
-                return MapsActivity.newInstance();
+                return MapsFragment.newInstance();
             default:
                 return null;
         }

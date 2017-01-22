@@ -13,18 +13,18 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends Fragment implements OnMapReadyCallback
+public class MapsFragment extends Fragment implements OnMapReadyCallback
 {
     private GoogleMap mMap;
 
-    public MapsActivity()
+    public MapsFragment()
     {
         // Required empty public constructor
     }
 
-    public static MapsActivity newInstance()
+    public static MapsFragment newInstance()
     {
-        return new MapsActivity();
+        return new MapsFragment();
     }
 
     @Override
@@ -53,8 +53,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        LatLng sydney = new LatLng(50.251489, 19.014624);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Kato :)"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 }
