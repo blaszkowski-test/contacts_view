@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.app.TaskStackBuilder;
 
 import java.util.Calendar;
 
@@ -37,12 +38,20 @@ public class NotificationHelper
 
         Calendar calendar = Calendar.getInstance();
 
-        mContentIntent = PendingIntent.getActivity(mContext, PENDING_ACTIVITY, mIntent, FLAG_UPDATE_CURRENT);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(mContext);
+        stackBuilder.addParentStack(DetailsActivity.class);
+        stackBuilder.addNextIntent(mIntent);
+
+        mContentIntent =
+                stackBuilder.getPendingIntent(
+                        PENDING_ACTIVITY,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
 
         mNotification = new NotificationCompat.Builder(mContext)
                 .setContentTitle(mContext.getString(R.string.app_name))
                 .setTicker(mContext.getString(R.string.app_name))
-                .setProgress(100, 0, false)
+                //.setProgress(100, 0, false)
                 .setContentText(mIntent.getStringExtra(MainActivity.User_Name))
                 .setSmallIcon(android.R.drawable.stat_sys_download)
                 .setWhen(calendar.getTimeInMillis())

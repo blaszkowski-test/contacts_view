@@ -33,6 +33,9 @@ public class DetailsActivity extends AppCompatActivity implements PermissionHelp
     @Override
     public void onBackPressed()
     {
+        super.onBackPressed();
+
+        /* TaskStackBuilder works
         if (LoadedFromBroadcast)
         {
             Intent intent = new Intent(DetailsActivity.this, MainActivity.class);
@@ -43,6 +46,7 @@ public class DetailsActivity extends AppCompatActivity implements PermissionHelp
         {
             super.onBackPressed();
         }
+        */
     }
 
     @Override
