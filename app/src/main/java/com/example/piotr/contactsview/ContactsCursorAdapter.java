@@ -1,10 +1,15 @@
 package com.example.piotr.contactsview;
 
+import android.animation.ObjectAnimator;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
@@ -16,6 +21,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
+import java.util.Date;
 import java.util.Set;
 
 
@@ -83,35 +90,50 @@ public class ContactsCursorAdapter extends CursorAdapter
 
     }
 
-    public void openPhoto(ImageView iv, long contactId)
+    public void openPhoto(ImageView image, long contactId)
     {
+        image.setTag(contactId);
+        image.setImageResource(R.drawable.ic_profile);
+
         if(photoNotAvailable.contains(String.valueOf(contactId)))
         {
-            iv.setImageResource(R.drawable.ic_profile);
             return;
         }
 
         final Bitmap bitmap = getBitmapFromMemCache(String.valueOf(contactId));
         if (bitmap != null)
         {
-            iv.setImageBitmap(bitmap);
+            fadeInDisplay(image,bitmap);
+            //iv.setImageBitmap(bitmap);
         }
         else
         {
             Uri contactUri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, contactId);
             Uri photoUri = Uri.withAppendedPath(contactUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
-            new LoadThumbnail(iv, contactId).execute(photoUri);
+
+            new LoadThumbnail(new WeakReference<ImageView>(image), contactId).execute(photoUri);
         }
+    }
+
+
+    public void fadeInDisplay(ImageView imageView, Bitmap bitmap) {
+        final TransitionDrawable td =
+                new TransitionDrawable(new Drawable[]{
+                        new ColorDrawable(0),
+                        new BitmapDrawable(imageView.getResources(), bitmap)
+                });
+        imageView.setImageDrawable(td);
+        td.startTransition(1000);
     }
 
     private class LoadThumbnail extends AsyncTask<Uri, Void, Bitmap>
     {
-        private ImageView imageView;
+        private WeakReference<ImageView> weakImageView;
         private long contactId;
 
-        public LoadThumbnail(ImageView iv, long contactId)
+        public LoadThumbnail(WeakReference<ImageView> image, long contactId)
         {
-            imageView = iv;
+            weakImageView = image;
             this.contactId = contactId;
         }
 
@@ -143,18 +165,27 @@ public class ContactsCursorAdapter extends CursorAdapter
             return null;
         }
 
+
         @Override
         protected void onPostExecute(Bitmap result)
         {
             if (result != null)
             {
                 addBitmapToMemoryCache(String.valueOf(contactId), result);
-                imageView.setImageBitmap(result);
+
+                ImageView currentImage = weakImageView.get();
+                if(currentImage != null)
+                {
+                    long tagData = (long) currentImage.getTag();
+                    if (tagData == contactId)
+                    {
+                        fadeInDisplay(currentImage, result);
+                    }
+                }
             }
             else
             {
                 photoNotAvailable.add(String.valueOf(contactId));
-                imageView.setImageResource(R.drawable.ic_profile);
             }
         }
     }
